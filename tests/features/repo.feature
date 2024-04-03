@@ -78,6 +78,15 @@ Feature: Subcommand: dab repo
 
 		Then it should pass with "FOOBAR"
 
+	Scenario: Run short alias for entrypoint run
+		Given I successfully run `dab repo add dotfiles6 https://github.com/Nekroze/dotfiles.git`
+		And I run `dab repo entrypoint create dotfiles6 start`
+		And I successfully run `dab config add repo/dotfiles6/entrypoint/start echo FOOBAR`
+
+		When I run `dab run dotfiles6 start`
+
+		Then it should pass with "FOOBAR"
+
 	@smoke
 	Scenario: Can use custom arguments in entrypoints
 		Given I successfully run `dab repo add dotfiles7 https://github.com/Nekroze/dotfiles.git`
