@@ -1,5 +1,4 @@
-version: '3.5'
-
+---
 services:
 
   mysql:
@@ -29,5 +28,5 @@ networks:
   default:
     name: dab_apps
   lab:
-    external:
-      name: lab
+    external: true
+    name: lab

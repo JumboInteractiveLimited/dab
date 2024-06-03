@@ -1,9 +1,5 @@
 version: 2.1
 
-notify:
-  webhooks:
-    - url: 'https://webhooks.gitter.im/e/cc6aefa009b39156b845'
-
 workflows:
   version: 2
 
@@ -46,13 +42,9 @@ jobs:
 
   Shfmt:
     docker:
-      - image: golang:1.12
+      - image: mvdan/shfmt:v3-alpine
     steps:
       - checkout
-
-      - run:
-          name: install
-          command: go get mvdan.cc/sh/cmd/shfmt
 
       - run:
           name: check
@@ -60,18 +52,13 @@ jobs:
 
   GolangCI-Lint:
     docker:
-      - image: golang:1.12
+      - image: golangci/golangci-lint:v1.57.1
     steps:
       - checkout
 
       - run:
-          name: install
-          command: |
-              curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.15.0
-
-      - run:
           name: get deps
-          command: go mod download
+          command: cd completion && go mod download
           environment:
             GO111MODULE: 'on'
 
@@ -79,12 +66,12 @@ jobs:
           name: check
           command: |
               ./scripts/compgen.sh
-              cd completion && golangci-lint run --deadline 4m --enable-all --disable dupl,lll,gochecknoglobals,gochecknoinits
+              cd completion && golangci-lint run --timeout 4m --enable-all --disable dupl,lll,gochecknoglobals,gochecknoinits,depguard,exhaustivestruct,exhaustruct,gomnd,varnamelen,nonamedreturns,wsl,ireturn,gofumpt
 
 
   'Danger Automated Code Review':
     docker:
-      - image: circleci/node:latest
+      - image: cimg/node:lts
     steps:
       - checkout
 
@@ -100,15 +87,21 @@ jobs:
       - checkout
 
       - run:
-          name: Install Docker Compose
+          name: Install Docker Compose v2
           command: |
-            curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
+            curl -sSL "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o ~/docker-compose
+            mkdir -p ~/.docker/cli-plugins
             chmod +x ~/docker-compose
-            sudo mv ~/docker-compose /usr/local/bin/docker-compose
+            mv ~/docker-compose ~/.docker/cli-plugins/docker-compose
 
       - run:
           name: Build Image
           command: ./scripts/build.sh
+
+      - run:
+          name: Create tmp folder
+          command:
+            mkdir -p /tmp
 
       - run:
           name: Smoke Tests
@@ -119,6 +112,7 @@ jobs:
 
       - store_test_results:
           path: /tmp/dab/test_results
+
       - run:
           name: Clear test results
           when: on_fail
@@ -133,6 +127,7 @@ jobs:
 
       - store_test_results:
           path: /tmp/dab/test_results
+
       - run:
           name: Clear test results
           when: on_fail
@@ -145,11 +140,12 @@ jobs:
       - checkout
 
       - run:
-          name: Install Docker Compose
+          name: Install Docker Compose v2
           command: |
-            curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
+            curl -sSL "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o ~/docker-compose
+            mkdir -p ~/.docker/cli-plugins
             chmod +x ~/docker-compose
-            sudo mv ~/docker-compose /usr/local/bin/docker-compose
+            mv ~/docker-compose ~/.docker/cli-plugins/docker-compose
 
       - run:
           name: UX Regression Tests
@@ -159,6 +155,7 @@ jobs:
 
       - store_test_results:
           path: /tmp/dab/test_results
+
       - run:
           name: Clear test results
           when: on_fail
@@ -171,12 +168,12 @@ jobs:
       - checkout
 
       - run:
-          name: Install Docker Compose
+          name: Install Docker Compose v2
           command: |
-            curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
+            curl -sSL "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o ~/docker-compose
+            mkdir -p ~/.docker/cli-plugins
             chmod +x ~/docker-compose
-            sudo mv ~/docker-compose /usr/local/bin/docker-compose
-
+            mv ~/docker-compose ~/.docker/cli-plugins/docker-compose 
 
       - run:
           name: Profile

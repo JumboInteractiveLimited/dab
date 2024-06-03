@@ -1,5 +1,4 @@
-version: '3.2'
-
+---
 services:
 
   dab:
@@ -22,7 +21,7 @@ services:
     stdin_open: true
 
   build:
-    image: docker/compose:1.23.2
+    image: docker:25.0.5-cli
     command: build --force-rm --pull dab
     working_dir: /opt/dab/tests
     volumes:

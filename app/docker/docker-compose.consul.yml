@@ -1,10 +1,9 @@
-version: '3.5'
-
+---
 services:
 
   consul:
     container_name: dab_consul
-    image: "consul:${DAB_APPS_CONSUL_TAG:-latest}"
+    image: "hashicorp/consul:${DAB_APPS_CONSUL_TAG:-latest}"
     restart: on-failure
     labels:
       description: 'Services discovery and key value store'
